@@ -8,6 +8,7 @@ from pydantic import BaseModel
 # Assumptions:
 # - A Hub can belong to one and only one Dwelling
 # - A Device can belong to one and only one Hub
+# - Lock pin will be a random 4-digit number
 
 class Dwelling(BaseModel):
   id: str = str(uuid4())
@@ -16,7 +17,7 @@ class Dwelling(BaseModel):
 
 class Hub(BaseModel):
   id: str = str(uuid4())
-  dwelling_id: str
+  dwelling_id: Union[str, None] = None
 
 class DeviceType(Enum):
   SWITCH = 1
@@ -26,7 +27,7 @@ class DeviceType(Enum):
 
 class Device(BaseModel):
   id: str = str(uuid4())
-  hub_id: str
+  hub_id: Union[str, None] = None
   device_type: DeviceType
   del_stamp: Union[datetime, None] = None
 
