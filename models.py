@@ -5,13 +5,17 @@ from uuid import uuid4
 
 from pydantic import BaseModel
 
+# Assumptions:
+# - A Hub can belong to one and only one Dwelling
+# - A Device can belong to one and only one Hub
+
 class Dwelling(BaseModel):
-  id: uuid4
+  id: str = str(uuid4())
   address: str
   is_occupied: bool
 
 class Hub(BaseModel):
-  id: uuid4
+  id: str = str(uuid4())
   dwelling_id: str
 
 class DeviceType(Enum):
@@ -21,19 +25,24 @@ class DeviceType(Enum):
   THERMOSTAT = 4
 
 class Device(BaseModel):
-  id: uuid4
+  id: str = str(uuid4())
+  hub_id: str
   device_type: DeviceType
   del_stamp: Union[datetime, None] = None
 
 class Switch(Device):
+  device_type: DeviceType = DeviceType.SWITCH
   is_on: bool
 
 class Dimmer(Device):
+  device_type: DeviceType = DeviceType.DIMMER
   light_level: int
 
 class Lock(Device):
+  device_type: DeviceType = DeviceType.LOCK
   is_locked: bool
   pin: int
 
 class Thermostat(Device):
+  device_type: DeviceType = DeviceType.THERMOSTAT
   temp: int
