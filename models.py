@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Union
 from uuid import uuid4
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 # Assumptions:
 # - A Hub can belong to one and only one Dwelling
@@ -37,7 +37,7 @@ class Switch(Device):
 
 class Dimmer(Device):
   device_type: DeviceType = DeviceType.DIMMER
-  light_level: int
+  light_level: int = Field(ge=0, le=100)
 
 class Lock(Device):
   device_type: DeviceType = DeviceType.LOCK
@@ -46,4 +46,4 @@ class Lock(Device):
 
 class Thermostat(Device):
   device_type: DeviceType = DeviceType.THERMOSTAT
-  temp: int
+  temp: int = Field(ge=50, le=90)
