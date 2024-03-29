@@ -15,10 +15,10 @@ def initialize_datastores() -> Datastores:
   dwellings: List[Dwelling] = list()
 
   hub_by_id: Dict[str, Hub] = dict()
-  hubs = List[Hub] = list()
+  hubs: List[Hub] = list()
 
   device_by_id: Dict[str, Union[Switch, Dimmer, Lock, Thermostat]] = dict()
-  devices = List[Union[Switch, Dimmer, Lock, Thermostat]] = list()
+  devices: List[Union[Switch, Dimmer, Lock, Thermostat]] = list()
 
   datastores: Datastores = Datastores(
     dwelling_by_id=dwelling_by_id,

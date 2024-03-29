@@ -2,6 +2,7 @@ from datetime import datetime
 from random import randint
 from typing import Any, List, Tuple, Union
 
+from datastore import Datastores
 from models import (
   DeviceType,
   Dimmer,
@@ -11,7 +12,6 @@ from models import (
   Switch,
   Thermostat,
 )
-from datastore import Datastores
 
 # Dwelling Operations
 def create_dwelling(datastores: Datastores, address: str, is_occupied: bool) -> Tuple[Datastores, Dwelling]:
