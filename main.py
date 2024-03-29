@@ -1,6 +1,6 @@
 from datetime import datetime
 from random import randint
-from typing import Any, List, Union
+from typing import Any, List, Tuple, Union
 
 from models import (
   DeviceType,
@@ -11,74 +11,73 @@ from models import (
   Switch,
   Thermostat,
 )
-from datastore import (
-  device_by_id,
-  devices,
-  dwelling_by_id,
-  dwellings,
-  hub_by_id,
-  hubs,
-)
+from datastore import Datastores
 
 # Dwelling Operations
-def create_dwelling(address: str, is_occupied: bool) -> Dwelling:
+def create_dwelling(datastores: Datastores, address: str, is_occupied: bool) -> Tuple[Datastores, Dwelling]:
   dwelling = Dwelling(address=address, is_occupied=is_occupied)
-  dwelling_by_id[dwelling.id] = dwelling
-  dwellings.append(dwelling)
-  return dwelling
+  datastores['dwelling_by_id'][dwelling.id] = dwelling
+  datastores['dwellings'].append(dwelling)
+  return datastores, dwelling
 
-def dwelling_occupied(dwelling_id: str):
-  dwelling = dwelling_by_id[dwelling_id]
+def dwelling_occupied(datastores: Datastores, dwelling_id: str) -> Datastores:
+  dwelling = datastores['dwelling_by_id'][dwelling_id]
   dwelling.is_occupied = True
+  return datastores
 
-def dwelling_vacant(dwelling_id: str):
-  dwelling = dwelling_by_id[dwelling_id]
+def dwelling_vacant(datastores: Datastores, dwelling_id: str) -> Datastores:
+  dwelling = datastores['dwelling_by_id'][dwelling_id]
   dwelling.is_occupied = False
+  return datastores
 
-def install_hub(dwelling_id: str, hub_id: str):
-  hub = hub_by_id[hub_id]
+def install_hub(datastores: Datastores, dwelling_id: str, hub_id: str) -> Datastores:
+  hub = datastores['hub_by_id'][hub_id]
   hub.dwelling_id = dwelling_id
+  return datastores
 
-def list_dwellings() -> List[Dwelling]:
-  return dwellings
+def list_dwellings(datastores: Datastores) -> Tuple[Datastores, List[Dwelling]]:
+  return datastores['dwellings']
 
 # Hub Operations
-def create_hub() -> Hub:
+def create_hub(datastores: Datastores) -> Tuple[Datastores, Hub]:
   hub = Hub()
-  hub_by_id[hub.id] = hub
-  hubs.append(hub)
-  return hub
+  datastores['hub_by_id'][hub.id] = hub
+  datastores['hubs'].append(hub)
+  return datastores, hub
 
-def pair_device(hub_id: str, device_id: str):
-  device = device_by_id[device_id]
+def pair_device(datastores: Datastores, hub_id: str, device_id: str) -> Datastores:
+  device = datastores['device_by_id'][device_id]
   device.hub_id = hub_id
+  return datastores
 
-def get_device_state(hub_id: str, device_id: str) -> Any:
-  device = device_by_id[device_id]
+def get_device_state(datastores: Datastores, hub_id: str, device_id: str) -> Tuple[Datastores, Any]:
+  device = datastores['device_by_id'][device_id]
   if device.hub_id != hub_id:
     raise Exception(f'ERROR: device {device_id} does not belong to hub {hub_id}')
   if device.device_type == DeviceType.SWITCH:
-    return {'device_id': device.id, 'is_on': device.is_on}
+    return datastores, {'device_id': device.id, 'is_on': device.is_on}
   elif device.device_type == DeviceType.DIMMER:
-    return {'device_id': device.id, 'light_level': device.light_level}
+    return datastores, {'device_id': device.id, 'light_level': device.light_level}
   elif device.device_type == DeviceType.LOCK:
-    return {'device_id': device.id, 'is_locked': device.is_locked}
+    return datastores, {'device_id': device.id, 'is_locked': device.is_locked}
   elif device.device_type == DeviceType.THERMOSTAT:
-    return {'device_id': device.id, 'temp': device.temp}
+    return datastores, {'device_id': device.id, 'temp': device.temp}
   else:
     raise Exception(f'ERROR: unrecognized device type {device.device_type}')
 
-def list_devices(hub_id: str) -> List[Union[Switch, Dimmer, Lock, Thermostat]]:
-  return [device for device in devices if device.hub_id == hub_id and device.del_stamp is None]
+def list_devices(datastores: Datastores, hub_id: str) -> Tuple[Datastores, List[Union[Switch, Dimmer, Lock, Thermostat]]]:
+  hub_devices = [device for device in datastores['devices'] if device.hub_id == hub_id and device.del_stamp is None]
+  return datastores, hub_devices
 
-def remove_device(hub_id: str, device_id: str):
-  device = device_by_id[device_id]
+def remove_device(datastores: Datastores, hub_id: str, device_id: str) -> Datastores:
+  device = datastores['device_by_id'][device_id]
   if device.hub_id != hub_id:
     raise Exception(f'ERROR: device {device_id} does not belong to hub {hub_id}')
   device.hub_id = None
+  return datastores
 
 # Device Operations
-def create_device(device_type: DeviceType) -> Union[Switch, Dimmer, Lock, Thermostat]:
+def create_device(datastores: Datastores, device_type: DeviceType) -> Tuple[Datastores, Union[Switch, Dimmer, Lock, Thermostat]]:
   if device_type == DeviceType.SWITCH:
     device = Switch(is_on=False)
   elif device_type == DeviceType.DIMMER:
@@ -89,22 +88,23 @@ def create_device(device_type: DeviceType) -> Union[Switch, Dimmer, Lock, Thermo
     device = Thermostat(temp=70)
   else:
     raise Exception(f'ERROR: unrecognized device type {device_type}')
-  device_by_id[device.id] = device
-  devices.append(device)
-  return device
+  datastores['device_by_id'][device.id] = device
+  datastores['devices'].append(device)
+  return datastores, device
 
-def delete_device(device_id: str):
-  device = device_by_id[device_id]
+def delete_device(datastores: Datastores, device_id: str) -> Datastores:
+  device = datastores['device_by_id'][device_id]
   if device.hub_id is not None:
     raise Exception(f'ERROR: device {device_id} is currently paired')
   device.del_stamp = datetime.now(datetime.timezone.utc)
+  return datastores
 
-def device_info(device_id: str) -> Union[Switch, Dimmer, Lock, Thermostat]:
-  device = device_by_id[device_id]
-  return device
+def device_info(datastores: Datastores, device_id: str) -> Tuple[Datastores, Union[Switch, Dimmer, Lock, Thermostat]]:
+  device = datastores['device_by_id'][device_id]
+  return datastores, device
 
-def modify_device(device_id: str, **kwargs):
-  device = device_by_id[device_id]
+def modify_device(datastores: Datastores, device_id: str, **kwargs) -> Datastores:
+  device = datastores['device_by_id'][device_id]
   if device.device_type == DeviceType.SWITCH:
     val = kwargs.get('is_on', False)
     device.is_on = val
@@ -119,21 +119,7 @@ def modify_device(device_id: str, **kwargs):
     device.temp = val
   else:
     raise Exception(f'ERROR: unrecognized device type {device.device_type}')
+  return datastores
 
-def list_devices() -> List[Union[Switch, Dimmer, Lock, Thermostat]]:
-  return devices
-
-
-
-
-
-# TEST
-def print_data():
-  print('dwelling_by_id:')
-  print(dwelling_by_id)
-  print('dwellings:')
-  print(dwellings)
-d = create_dwelling('test', False)
-print_data()
-dwelling_occupied(d.id)
-print_data()
+def list_devices(datastores: Datastores) -> Tuple[Datastores, List[Union[Switch, Dimmer, Lock, Thermostat]]]:
+  return datastores, datastores['devices']
