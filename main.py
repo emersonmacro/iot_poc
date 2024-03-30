@@ -36,7 +36,7 @@ def install_hub(datastores: Datastores, dwelling_id: str, hub_id: str) -> Datast
   return datastores
 
 def list_dwellings(datastores: Datastores) -> Tuple[Datastores, List[Dwelling]]:
-  return datastores['dwellings']
+  return datastores, datastores['dwellings']
 
 # Hub Operations
 def create_hub(datastores: Datastores) -> Tuple[Datastores, Hub]:
