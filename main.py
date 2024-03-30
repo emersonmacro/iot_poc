@@ -83,6 +83,7 @@ def create_device(datastores: Datastores, device_type: DeviceType) -> Tuple[Data
   elif device_type == DeviceType.DIMMER:
     device = Dimmer(light_level=0)
   elif device_type == DeviceType.LOCK:
+    # TODO: remove pin from response for security purposes
     device = Lock(is_locked=False, pin=randint(1000,9999))
   elif device_type == DeviceType.THERMOSTAT:
     device = Thermostat(temp=70)
@@ -96,7 +97,7 @@ def delete_device(datastores: Datastores, device_id: str) -> Datastores:
   device = datastores['device_by_id'][device_id]
   if device.hub_id is not None:
     raise Exception(f'ERROR: device {device_id} is currently paired')
-  device.del_stamp = datetime.now(datetime.timezone.utc)
+  device.del_stamp = datetime.now()
   return datastores
 
 def device_info(datastores: Datastores, device_id: str) -> Tuple[Datastores, Union[Switch, Dimmer, Lock, Thermostat]]:
@@ -113,7 +114,7 @@ def modify_device(datastores: Datastores, device_id: str, **kwargs) -> Datastore
     device.light_level = val
   elif device.device_type == DeviceType.LOCK:
     val = kwargs.get('is_locked', False)
-    device.is_locked == DeviceType
+    device.is_locked = val
   elif device.device_type == DeviceType.THERMOSTAT:
     val = kwargs.get('temp', 70)
     device.temp = val
