@@ -11,12 +11,12 @@ from pydantic import BaseModel, Field
 # - Lock pin will be a random 4-digit number
 
 class Dwelling(BaseModel):
-  id: str = str(uuid4())
+  id: str = Field(default_factory=lambda: str(uuid4()))
   address: str
   is_occupied: bool
 
 class Hub(BaseModel):
-  id: str = str(uuid4())
+  id: str = Field(default_factory=lambda: str(uuid4()))
   dwelling_id: Union[str, None] = None
 
 class DeviceType(Enum):
@@ -26,7 +26,7 @@ class DeviceType(Enum):
   THERMOSTAT = 4
 
 class Device(BaseModel):
-  id: str = str(uuid4())
+  id: str = Field(default_factory=lambda: str(uuid4()))
   hub_id: Union[str, None] = None
   device_type: DeviceType
   del_stamp: Union[datetime, None] = None
