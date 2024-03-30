@@ -121,5 +121,5 @@ def modify_device(datastores: Datastores, device_id: str, **kwargs) -> Datastore
     raise Exception(f'ERROR: unrecognized device type {device.device_type}')
   return datastores
 
-def list_devices(datastores: Datastores) -> Tuple[Datastores, List[Union[Switch, Dimmer, Lock, Thermostat]]]:
+def list_all_devices(datastores: Datastores) -> Tuple[Datastores, List[Union[Switch, Dimmer, Lock, Thermostat]]]:
   return datastores, datastores['devices']
