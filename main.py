@@ -47,11 +47,13 @@ def create_hub(datastores: Datastores) -> Tuple[Datastores, Hub]:
 
 def pair_device(datastores: Datastores, hub_id: str, device_id: str) -> Datastores:
   device = datastores['device_by_id'][device_id]
+  # TODO: handle device-not-found case
   device.hub_id = hub_id
   return datastores
 
 def get_device_state(datastores: Datastores, hub_id: str, device_id: str) -> Tuple[Datastores, Any]:
   device = datastores['device_by_id'][device_id]
+  # TODO: handle device-not-found case
   if device.hub_id != hub_id:
     raise Exception(f'ERROR: device {device_id} does not belong to hub {hub_id}')
   if device.device_type == DeviceType.SWITCH:
@@ -71,6 +73,7 @@ def list_devices(datastores: Datastores, hub_id: str) -> Tuple[Datastores, List[
 
 def remove_device(datastores: Datastores, hub_id: str, device_id: str) -> Datastores:
   device = datastores['device_by_id'][device_id]
+  # TODO: handle device-not-found case
   if device.hub_id != hub_id:
     raise Exception(f'ERROR: device {device_id} does not belong to hub {hub_id}')
   device.hub_id = None
